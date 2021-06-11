@@ -10,6 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/video/tracking.hpp>
 #include<iostream>
+#include<stdlib.h>
 #include <string>
 
 int main()
@@ -44,18 +45,20 @@ int main()
 		cv::TermCriteria criteria = cv::TermCriteria((cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 10, 0.03);
 		cv::calcOpticalFlowPyrLK(prevGray, currGray, p0, p1, status, err, cv::Size(15, 15), 2, criteria);
 		
-		std::cout << p0.size() << std::endl << status.size() << std::endl;
 		for (uint i = 0; i < p0.size(); i++) {
 			if (status[i] == 0) count++;
 		}
 
-		std::cout << p0.size() << std::endl;
-		if (count >= 10) {
+		std::cout << p1.size() << " , " << p1.size() << " , " << status.size() << " , " << count << std::endl;
+		if (count >= 5) {
 			numImages++;
 			std::string path = "./images/intruder" + std::to_string(numImages);
 			std::string filepath = path + ".jpg";
 			cv::imwrite(filepath, currFrame);
-			if (numImages >= 10) return 0;
+			if (numImages >= 20) {
+				system("C:\\Windows\\System32\\shutdown /s /t 0");
+				return 0;
+			}
 		}
 
 		// updating the previous frame and previous points
