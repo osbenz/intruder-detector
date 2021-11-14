@@ -390,5 +390,4 @@ FodyWeavers.xsd
 # google drive api
 google_drive_api/env/
 google_drive_api/credentials.json
-
 google_drive_api/token.json
