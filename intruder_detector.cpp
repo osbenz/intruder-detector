@@ -15,19 +15,19 @@
 
 int main()
 {	
-	cv::VideoCapture capture(0); // the 0 is for the default computer webcam try other integers if it doesn't work for 0 
+	cv::VideoCapture capture(0); // The value 0 is for the default computer webcam 
 
-	// check if the webcam is opened or not
+	// Check if the webcam is opened or not
 	if (!capture.isOpened()) {
 		std::cerr << "Error! Can't open the webcam" << std::endl;
-		return -1;
+		return 0;
 	}
 	Sleep(5000);
 
 	std::vector<cv::Point2f> p0, p1;  
 	cv::Mat prevFrame, prevGray; // previous frame, previous gray
 	
-	// find good features in the first frame
+	// Find good features in the first frame
 	capture >> prevFrame;
 	cv::cvtColor(prevFrame, prevGray, cv::COLOR_BGR2GRAY);
 	goodFeaturesToTrack(prevGray, p0, 100, 0.3, 7, cv::Mat(), 7, false, 0.04);
@@ -39,7 +39,7 @@ int main()
 		capture >> currFrame;
 		cv::cvtColor(currFrame, currGray, cv::COLOR_BGR2GRAY);
 
-		// calculate optical flow
+		// Compute optical flow
 		std::vector<uchar> status;
 		std::vector<float> err;
 		cv::TermCriteria criteria = cv::TermCriteria((cv::TermCriteria::COUNT)+(cv::TermCriteria::EPS), 10, 0.03);
@@ -49,15 +49,28 @@ int main()
 			if (status[i] == 0) count++;
 		}
 
-		std::cout << p1.size() << " , " << p1.size() << " , " << status.size() << " , " << count << std::endl;
+		// If there are enough differences between the two frames (we can choose other value than 5)
 		if (count >= 5) {
 			numImages++;
 			std::string path = "./images/intruder" + std::to_string(numImages);
 			std::string filepath = path + ".jpg";
 			cv::imwrite(filepath, currFrame);
+			
+			// I decided to take 20 photos, that would be enough to identify the intruder 
 			if (numImages >= 20) {
-				system("C:\\Windows\\System32\\shutdown /s /t 0");
+				#ifdef _WIN32 // If Windows
+				// Activate existing python virtual environment
+				system(".\\goole_drive_api\\env\\Scripts\\activate");
+				// Execute python script that uploads the photos taken by our intruder detector program
+				system(".\\goole_drive_api\\google_drive_api.py"); 
+				system("C:\\Windows\\System32\\shutdown /s");
 				return 0;
+				#else // Linux or Mac
+				system("source ./goole_drive_api/env/bin/activate");
+				system("./goole_drive_api/google_drive_api");
+				system("shutdown -P now");
+				return 0;
+				#endif		
 			}
 		}
 
